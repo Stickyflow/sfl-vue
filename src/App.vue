@@ -26,6 +26,7 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const config = ref<ServerConfig | null>(null)
 const messagesEl = ref<HTMLDivElement | null>(null)
+const copied = ref(false)
 
 // Best-effort and non-blocking, same as sfl-chat's labelServerDefaults(): if
 // /api/config isn't reachable (a static preview with no dev-server backend),
@@ -40,18 +41,29 @@ onMounted(async () => {
   }
 })
 
-// There is exactly one diagram per chat, not one per turn — the most recent
-// message that actually carries an `sfl` block. A later reply that answers
-// in prose only, or whose document got rejected as a byte-identical repeat
-// (see the duplicate guard in send() below), leaves this pointing at
-// whichever earlier turn last changed it, same as sfl-chat's own rule.
-const currentSfl = computed<string | null>(() => {
+// The index of the most recent message that actually carries an `sfl` block
+// — there is exactly one diagram per chat, not one per turn, same rule as
+// sfl-chat. Kept as an index (not just the source string) so the diagram
+// card's <Teleport> below knows which message row currently owns it: the
+// card is built ONCE, in the DOM, and reattached to a new slot as this index
+// moves — the same trick sfl-chat's own diagramCardEl reattachment plays in
+// vanilla DOM — so the mounted <stickyflow-diagram>'s pan/zoom state survives
+// a later reply instead of resetting every turn.
+const diagramOwnerIndex = computed<number | null>(() => {
   for (let i = messages.value.length - 1; i >= 0; i--) {
-    const sfl = messages.value[i].sfl
-    if (sfl) return sfl
+    if (messages.value[i].sfl) return i
   }
   return null
 })
+
+const currentSfl = computed<string | null>(() => {
+  const owner = diagramOwnerIndex.value
+  return owner === null ? null : (messages.value[owner].sfl ?? null)
+})
+
+const diagramSlotSelector = computed<string | null>(() =>
+  diagramOwnerIndex.value === null ? null : `#diagram-slot-${diagramOwnerIndex.value}`
+)
 
 /** Pulls the fenced ```sfl block out of a reply, if it has one. Mirrors
  *  examples/sfl-chat's extractSfl() — same contract, same reason to trust a
@@ -73,6 +85,20 @@ function scrollToBottom() {
   void nextTick(() => {
     if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
   })
+}
+
+let copyResetTimer: number | null = null
+/** Copies the current diagram's raw SFL source — same affordance as
+ *  sfl-chat's diagram__copy-btn, minus the source-view toggle it's normally
+ *  paired with there: this demo has no rendered/source switch, so the button
+ *  just copies `currentSfl` directly. */
+function copySfl() {
+  if (!currentSfl.value) return
+  navigator.clipboard.writeText(currentSfl.value).then(() => {
+    copied.value = true
+    if (copyResetTimer !== null) clearTimeout(copyResetTimer)
+    copyResetTimer = window.setTimeout(() => { copied.value = false }, 1400)
+  }).catch(err => console.error('Copy to clipboard failed', err))
 }
 
 async function send() {
@@ -134,53 +160,72 @@ async function send() {
       copy .env.example to .env, add your key, and restart the dev server.
     </p>
 
-    <main class="layout">
-      <section class="chat">
-        <div ref="messagesEl" class="messages">
-          <p v-if="messages.length === 0" class="messages__empty">
-            Describe something to diagram — a process, a system, a decision. Ask for a change afterward
-            and it edits the same diagram in place.
+    <div ref="messagesEl" class="scroll">
+      <div class="thread">
+        <div v-if="messages.length === 0" class="empty">
+          <h2>What should we map?</h2>
+          <p>
+            Describe something to diagram — a process, a system, a decision. Ask for a change
+            afterward and it edits the same diagram in place.
           </p>
-          <div v-for="(message, i) in messages" :key="i" class="message" :class="`message--${message.role}`">
-            <div
-              class="bubble"
-              v-html="renderMarkdownToHtml(message.role === 'assistant' ? replyProse(message.content) : message.content)"
-            />
-            <p v-if="message.cost" class="cost">
-              {{ message.cost.model }}<template v-if="message.cost.totalTokens">
-                &middot; {{ message.cost.totalTokens }} tokens</template>
-            </p>
-          </div>
-          <div v-if="loading" class="message message--assistant">
-            <div class="bubble bubble--loading">Thinking…</div>
-          </div>
         </div>
 
-        <p v-if="error" class="banner banner--error">{{ error }}</p>
-
-        <form class="composer" @submit.prevent="send">
-          <textarea
-            v-model="input"
-            placeholder="Describe something to diagram…"
-            rows="2"
-            @keydown.enter.exact.prevent="send"
+        <div v-for="(message, i) in messages" :key="i" class="message" :class="`message--${message.role}`">
+          <div
+            class="bubble"
+            v-html="renderMarkdownToHtml(message.role === 'assistant' ? replyProse(message.content) : message.content)"
           />
-          <button type="submit" aria-label="Send" :disabled="loading || !input.trim()">↑</button>
-        </form>
-      </section>
+          <p v-if="message.cost" class="cost">
+            {{ message.cost.model }}<template v-if="message.cost.totalTokens">
+              &middot; {{ message.cost.totalTokens }} tokens</template>
+          </p>
+          <!-- Teleport target for the single diagram card below — empty on
+               every row except the one that currently owns the diagram. -->
+          <div :id="`diagram-slot-${i}`" class="diagram-slot" />
+        </div>
 
-      <section class="canvas">
-        <!-- The entire embedding: a plain custom element, `:source` bound to
-             whatever the chat produced. `interactive` turns on click-to-select
-             and pan/zoom (stickyflow/viewer, mounted internally by the tag) —
-             there's no drag-to-edit here, because that's stickyflow/interaction,
-             a tier the web component doesn't expose yet. See this repo's
-             Framework Integration docs (React tab) for the JS-API pattern that
-             does support editing, if you outgrow this tier. -->
-        <stickyflow-diagram v-if="currentSfl" interactive :source="currentSfl" class="diagram" />
-        <p v-else class="canvas__empty">Nothing to show yet — ask for a diagram.</p>
-      </section>
-    </main>
+        <div v-if="loading" class="message message--assistant">
+          <div class="bubble bubble--loading">Thinking…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- The one diagram card for this chat, built once and reattached to a
+         new slot above as diagramSlotSelector moves — see diagramOwnerIndex. -->
+    <Teleport v-if="diagramSlotSelector" :to="diagramSlotSelector">
+      <div class="diagram">
+        <stickyflow-diagram v-if="currentSfl" interactive :source="currentSfl" class="diagram__viewer" />
+        <div class="diagram__bar">
+          <button
+            type="button"
+            class="diagram__copy-btn"
+            :aria-label="copied ? 'Copied' : 'Copy SFL source'"
+            @click="copySfl"
+          >
+            <svg v-if="!copied" viewBox="0 0 16 16" aria-hidden="true">
+              <rect x="5" y="3" width="8" height="10" rx="1.4" />
+              <path d="M3 5.5V13a1 1 0 0 0 1 1h6" />
+            </svg>
+            <svg v-else viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M3 8.5l3.5 3.5L13 4.5" />
+            </svg>
+            {{ copied ? 'Copied' : 'Copy SFL' }}
+          </button>
+        </div>
+      </div>
+    </Teleport>
+
+    <p v-if="error" class="banner banner--error">{{ error }}</p>
+
+    <form class="composer" @submit.prevent="send">
+      <textarea
+        v-model="input"
+        placeholder="Describe something to diagram…"
+        rows="2"
+        @keydown.enter.exact.prevent="send"
+      />
+      <button type="submit" aria-label="Send" :disabled="loading || !input.trim()">↑</button>
+    </form>
   </div>
 </template>
 
@@ -208,32 +253,37 @@ async function send() {
   color: var(--muted);
 }
 
-.layout {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(320px, 420px) 1fr;
-  min-height: 0;
-}
-
-.chat {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  border-right: 1px solid var(--border);
-}
-
-.messages {
+.scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  min-height: 0;
 }
 
-.messages__empty {
+.thread {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.empty {
+  padding-block: 3rem 1rem;
+  text-align: center;
+}
+
+.empty h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.empty p {
+  margin: 0 auto;
+  max-width: 30rem;
   color: var(--muted);
-  font-size: 0.9rem;
 }
 
 .message {
@@ -348,11 +398,67 @@ async function send() {
   border: 1px solid #fecaca;
 }
 
+/* ── Inline diagram card ────────────────────────────────────────────────
+   Teleported into whichever message row currently owns it (diagramSlotSelector) —
+   see the template. Same border/radius/background as sfl-chat's own .diagram. */
+.diagram {
+  margin-top: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.diagram__viewer {
+  display: block;
+  width: 100%;
+  height: 22rem;
+}
+
+.diagram__bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.4rem 0.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.diagram__copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  background: none;
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.diagram__copy-btn:hover,
+.diagram__copy-btn:focus-visible {
+  outline: none;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.diagram__copy-btn svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .composer {
   display: flex;
   align-items: flex-end;
   gap: 0.5rem;
-  margin: 0 0.75rem 0.75rem;
+  align-self: center;
+  width: min(48rem, calc(100% - 2.5rem));
+  margin-bottom: 0.85rem;
   padding: 0.5rem 0.5rem 0.5rem 1.1rem;
   border: 1px solid var(--border);
   border-radius: 1.4rem;
@@ -395,28 +501,5 @@ async function send() {
 .composer button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-.canvas {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  padding: 1.25rem;
-}
-
-.diagram {
-  width: 100%;
-  height: 100%;
-  border: 1px solid var(--border);
-  border-radius: 0.85rem;
-  overflow: hidden;
-  background: #fff;
-}
-
-.canvas__empty {
-  color: var(--muted);
-  font-size: 0.9rem;
 }
 </style>
