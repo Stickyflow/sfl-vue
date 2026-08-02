@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Never commit an API key. .env.example is the tracked template.
+.env
+.env.local

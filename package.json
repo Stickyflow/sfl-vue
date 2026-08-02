@@ -1,0 +1,25 @@
+{
+  "name": "sfl-vue-demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vue counterpart to examples/sfl-chat: same LLM-writes-SFL round trip, rendered through the drop-in <stickyflow-diagram> web component instead of the raw viewer API.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "marked": "^18.0.7",
+    "stickyflow": "file:../..",
+    "vue": "^3.5.40"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "openai": "^4.77.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.3.6",
+    "vue-tsc": "^3.3.9"
+  }
+}

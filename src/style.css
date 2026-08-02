@@ -1,0 +1,50 @@
+/* Same design tokens as examples/sfl-chat's own style.css, so this reads as
+   the same product rather than a differently-themed demo — see that file's
+   header comment for where the serif stack itself comes from. */
+:root {
+  --serif: 'Latin Modern Roman', 'CMU Serif', 'Source Serif 4', Georgia, Cambria, 'Times New Roman', serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --accent: #6d5ef0;
+  --accent-hover: #5b4ad9;
+  --accent-soft: rgba(109, 94, 240, 0.12);
+
+  --bg: #ffffff;
+  --surface: #f7f7f8;
+  --border: #e5e5e7;
+  --text: #1c1c1f;
+  --muted: #6b6b73;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--serif);
+  font-optical-sizing: auto;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+textarea,
+button {
+  font: inherit;
+  color: inherit;
+}
