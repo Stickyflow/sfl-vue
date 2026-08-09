@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "marked": "^18.0.7",
-    "stickyflow": "file:../..",
+    "stickyflow": "file:../stickyflow.js",
     "vue": "^3.5.40"
   },
   "devDependencies": {
