@@ -16,6 +16,7 @@ const html = computed(() => renderMarkdownToHtml(
 
 <template>
   <div class="message" :class="`message--${message.role}`">
+    <!-- eslint-disable-next-line vue/no-v-html -- renderMarkdownToHtml parses inertly and allowlists tags/attributes -->
     <div class="bubble" v-html="html" />
     <p v-if="message.cost" class="cost">
       {{ message.cost.model }}<template v-if="message.cost.totalTokens">
