@@ -22,7 +22,7 @@ npm run dev
 
 Either key on its own is enough — see `.env.example`. Same dev-server-only
 backend shape as sfl-chat: `/api/chat`, `/api/config`, `/api/prompt` are Vite
-`configureServer` middleware, so **this runs under `npm run dev` only** —
+`configureServer` middleware (in `server/`), so **this runs under `npm run dev` only** —
 `npm run build` emits static files with no backend, and don't expose the dev
 server beyond localhost (`vite --host`) unless you also add rate limiting and
 auth, neither of which is in scope here. See sfl-chat's own README for the
@@ -62,8 +62,8 @@ doesn't expose, not arbitrary cuts:
 Everything else — the SFL primer, the dual OpenAI/Anthropic backend with the
 same `LLM_PROVIDER`/model-prefix routing, the one-diagram-per-chat rule, the
 markdown-with-a-strict-allowlist rendering of replies — is the same idea,
-reimplemented for Vue rather than shared code (see `src/sflPrimer.ts` and
-`vite.config.ts` for why: examples are meant to be self-contained).
+reimplemented for Vue rather than shared code (see `server/sflPrimer.ts` and
+`server/config.ts` for why: examples are meant to be self-contained).
 
 ## The integration itself
 
