@@ -1,7 +1,10 @@
 import { createApp } from 'vue'
 import { defineStickyflowDiagram } from 'stickyflow/web-component'
 import App from './App.vue'
+import { applyTheme } from './composables/useTheme'
 import './style.css'
+
+applyTheme()
 
 // Registers <stickyflow-diagram> once, globally, before the app that uses it
 // mounts. This is the entire integration surface on the Vue side; everything

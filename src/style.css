@@ -3,22 +3,25 @@
     'Latin Modern Roman', 'CMU Serif', 'Source Serif 4', Georgia, Cambria, 'Times New Roman', serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  --accent: #6d5ef0;
-  --accent-hover: #5b4ad9;
-  --accent-soft: rgba(109, 94, 240, 0.12);
+  /* Each color is light-dark(light, dark). Which one applies follows
+     color-scheme: the OS setting by default, or the theme toggle once used
+     (data-theme on <html>, see useTheme). */
+  --accent: light-dark(#6d5ef0, #8b7ff5);
+  --accent-hover: light-dark(#5b4ad9, #a097f8);
+  --accent-soft: light-dark(rgba(109, 94, 240, 0.12), rgba(139, 127, 245, 0.16));
 
-  --bg: #ffffff;
-  --surface: #f7f7f8;
-  --raised: #ffffff;
-  --border: #e5e5e7;
-  --text: #1c1c1f;
-  --muted: #6b6b73;
+  --bg: light-dark(#ffffff, #141416);
+  --surface: light-dark(#f7f7f8, #1d1d21);
+  --raised: light-dark(#ffffff, #202024);
+  --border: light-dark(#e5e5e7, #2e2e34);
+  --text: light-dark(#1c1c1f, #ececf0);
+  --muted: light-dark(#6b6b73, #9b9ba4);
   --on-accent: #ffffff;
-  --shadow: rgba(0, 0, 0, 0.04);
+  --shadow: light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.4));
 
-  --danger-bg: #fef2f2;
-  --danger-text: #b91c1c;
-  --danger-border: #fecaca;
+  --danger-bg: light-dark(#fef2f2, #2a1215);
+  --danger-text: light-dark(#b91c1c, #fca5a5);
+  --danger-border: light-dark(#fecaca, #5c1d22);
 
   /* The diagram stays on a light canvas in both themes: the model picks the
      diagram's own colors (light fills, dark links and labels), which would
@@ -28,24 +31,12 @@
   color-scheme: light dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --accent: #8b7ff5;
-    --accent-hover: #a097f8;
-    --accent-soft: rgba(139, 127, 245, 0.16);
+:root[data-theme='light'] {
+  color-scheme: light;
+}
 
-    --bg: #141416;
-    --surface: #1d1d21;
-    --raised: #202024;
-    --border: #2e2e34;
-    --text: #ececf0;
-    --muted: #9b9ba4;
-    --shadow: rgba(0, 0, 0, 0.4);
-
-    --danger-bg: #2a1215;
-    --danger-text: #fca5a5;
-    --danger-border: #5c1d22;
-  }
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 * {
