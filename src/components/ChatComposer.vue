@@ -39,8 +39,8 @@ function submit() {
   padding: 0.5rem 0.5rem 0.5rem 1.1rem;
   border: 1px solid var(--border);
   border-radius: 1.4rem;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  background: var(--raised);
+  box-shadow: 0 1px 3px var(--shadow);
 }
 
 .composer:focus-within {
@@ -65,7 +65,7 @@ function submit() {
   border: 0;
   border-radius: 50%;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   cursor: pointer;
   font-size: 1.05rem;
   line-height: 1;

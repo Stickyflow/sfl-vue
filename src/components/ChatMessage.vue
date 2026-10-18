@@ -123,6 +123,9 @@ const costCaption = computed(() => {
   border: 0;
   padding: 0;
 }
+.bubble :deep(a) {
+  color: var(--accent);
+}
 
 .cost {
   margin: 0.2rem 0.15rem 0;

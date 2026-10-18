@@ -37,7 +37,7 @@ const { copied, copy } = useClipboard()
   border: 1px solid var(--border);
   border-radius: 0.85rem;
   overflow: hidden;
-  background: #fff;
+  background: var(--canvas);
 }
 
 .diagram__viewer {
