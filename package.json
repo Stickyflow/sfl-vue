@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Vue counterpart to examples/sfl-chat: same LLM-writes-SFL round trip, rendered through the drop-in <stickyflow-diagram> web component instead of the raw viewer API.",
+  "description": "stickyflow.js in Vue: a model writes SFL and the <stickyflow-diagram> web component renders it.",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --build && vite build",

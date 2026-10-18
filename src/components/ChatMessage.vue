@@ -53,8 +53,7 @@ const costCaption = computed(() => {
 }
 
 /* Only the reader's own turns get a boxed treatment. The assistant's
-   replies sit directly on the page, same asymmetry as sfl-chat's
-   .msg--user/.msg--assistant .msg__bubble. */
+   replies sit directly on the page. */
 .message--user .bubble {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -68,7 +67,7 @@ const costCaption = computed(() => {
 
 /* Rendered markdown inside a reply. v-html content isn't compiled by the SFC,
    so it never carries the scoped data attribute; :deep() is required for any
-   of this to reach it. Same rules as sfl-chat's .msg__bubble.is-markdown. */
+   of this to reach it. */
 .bubble :deep(p) {
   margin: 0 0 0.85em;
 }

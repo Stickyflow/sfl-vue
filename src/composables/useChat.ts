@@ -8,7 +8,7 @@ export function useChat() {
   const error = ref<string | null>(null)
 
   // The most recent message that actually carries an `sfl` block. There is
-  // exactly one diagram per chat, not one per turn, same rule as sfl-chat.
+  // exactly one diagram per chat, not one per turn.
   // Exposed as the message (not just its source) so App knows which row
   // renders the diagram card.
   const diagramOwner = computed<ChatMessage | null>(() => {
@@ -42,12 +42,9 @@ export function useChat() {
 
       const reply: string = data.reply
       const rawSfl = extractSfl(reply)
-      // Same duplicate guard as sfl-chat (the fuller "overlap" guard, checking
-      // whether new content was drawn ON TOP of existing content, is skipped
-      // here; see this example's README for why): a reply that just
-      // re-attaches the unchanged document, e.g. the model asking a clarifying
-      // question instead of revising anything, shouldn't overwrite the
-      // diagram with a byte-identical copy.
+      // A reply that just re-attaches the unchanged document, e.g. the model
+      // asking a clarifying question instead of revising anything, shouldn't
+      // overwrite the diagram with a byte-identical copy.
       const sfl = rawSfl && rawSfl !== currentSfl.value ? rawSfl : undefined
       messages.value.push({
         id: crypto.randomUUID(),

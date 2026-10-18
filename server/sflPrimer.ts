@@ -1,19 +1,9 @@
 // The system prompt's grammar section.
 //
-// Same content as examples/sfl-chat's own sflPrimer.ts — the primer teaches
-// SFL syntax, which has nothing to do with which frontend framework or
-// rendering tier renders the result, so there's no reason for this demo to
-// diverge from the one already tuned there. Duplicated rather than imported
-// because examples are meant to be self-contained, standalone projects (see
-// the package README's "Examples" section) — each has its own package.json
-// and consumes `stickyflow` the way a real host would, without depending on
-// a sibling example's internals. If you tune this prompt here, consider
-// whether the same fix belongs in sfl-chat's copy too.
-//
 // Deliberately NOT the full SFL 1.2 specification (644 lines, kept alongside the
 // language in the StickyFlow repository): sending that every turn is expensive
 // and buries the rules that actually matter under prose written for humans.
-// This is the operational subset — every value listed here was checked
+// This is the operational subset. Every value listed here was checked
 // against the parser and the renderer, not paraphrased from the spec, because
 // a primer that invents a shape name produces SFL that parses and then
 // renders as a default box.
@@ -21,13 +11,13 @@
 // If SFL gains a feature the model should use, it belongs here explicitly.
 // Silence is the safer failure: an unmentioned feature simply goes unused.
 //
-// Kept deliberately lean — cut on sight if a section stops earning its
-// tokens. Two rules of thumb: (1) one worked example, not several — a second
-// example earns its place only if it demonstrates something the first
-// genuinely can't; (2) a feature not needed by this demo's own three starter
-// prompts (a process flow, a system architecture, a decision flow) doesn't
-// belong here on the chance it's needed later — Container/Frame/Swimlane
-// grouping was cut for exactly this reason.
+// Kept deliberately lean; cut a section on sight once it stops earning its
+// tokens. Two rules of thumb: (1) one worked example, not several, since a
+// second example earns its place only if it shows something the first
+// genuinely can't; (2) a feature the typical requests here (a process flow,
+// a system architecture, a decision flow) don't need doesn't belong here on
+// the chance it's needed later. Container/Frame/Swimlane grouping was cut
+// for exactly this reason.
 export const SFL_PRIMER = `You are a helpful, direct assistant — answer the user's question or request in prose first, the way you normally would.
 
 Additionally, attach ONE small diagram after your prose, in SFL 1.2 (the

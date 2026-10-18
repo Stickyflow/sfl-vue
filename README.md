@@ -14,10 +14,8 @@
 </div>
 
 A model writes SFL, the page renders it, and your next message edits the same
-diagram. It is the round trip from [sfl-chat](https://github.com/Stickyflow/sfl-chat),
-rebuilt in Vue on top of `<stickyflow-diagram>` instead of the viewer API.
-sfl-chat shows what full control looks like; this one shows the least setup
-that works.
+diagram. It is built on `<stickyflow-diagram>` rather than the lower-level
+viewer API, to show the least setup that gets stickyflow.js working in Vue.
 
 ```text
 prompt  →  /api/chat  →  reply with an SFL block  →  <stickyflow-diagram :source>
@@ -71,21 +69,17 @@ and turns on selection, pan and zoom:
 
 That's the whole integration. Everything else in `src/` is ordinary chat UI.
 
-## Compared to sfl-chat
+## What it leaves out
 
-The gaps come from what the web component exposes, not from cutting corners.
+Most of these follow from what the web component exposes.
 
-| | sfl-chat | here |
-| --- | --- | --- |
-| Rendering | `stickyflow/viewer` | `<stickyflow-diagram>` |
-| Drag, resize, edit labels | yes, via `stickyflow/interaction` | no, the element doesn't wire that tier in |
-| Rejects a reply drawn on top of the old diagram | yes | no, only byte-identical replies are skipped |
-| Model and provider | Settings dialog, per browser | `.env` only |
-| Chats | many, kept in localStorage | one, in memory |
-
-Shared with sfl-chat: the SFL primer, the OpenAI/Anthropic routing, one
-diagram per chat, and sanitized markdown in replies. The code is copied, not
-imported, so each repo stands on its own.
+- **No canvas editing.** The element turns on selection, pan and zoom, but
+  doesn't wire in `stickyflow/interaction`, so there is no drag, resize or
+  label editing. For that, mount the viewer yourself and use the editing API.
+- **One chat, in memory.** It's gone on reload.
+- **Model and provider come from `.env` only.** There is no settings UI.
+- **Only identical replies are skipped.** A reply that repeats the current
+  document byte for byte doesn't replace it; anything else does.
 
 ## Configuration
 

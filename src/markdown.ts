@@ -1,4 +1,4 @@
-// Assistant replies are markdown — the model writes **bold**, bullet lists and
+// Assistant replies are markdown: the model writes **bold**, bullet lists and
 // GFM tables unprompted, and rendering them as literal text makes a good
 // answer look like debug output.
 //
@@ -11,13 +11,12 @@
 // document: unknown elements are unwrapped (their text survives, the tag
 // doesn't), and every attribute is dropped except an http(s) href.
 //
-// Same allowlist as examples/sfl-chat's markdown.ts, adapted to return a
-// sanitized HTML string instead of mutating a DOM element — a Vue template
-// binds it with v-html rather than imperatively replacing children.
+// The result is a sanitized HTML string rather than a mutated DOM element,
+// because a Vue template binds it with v-html.
 import { marked } from 'marked'
 
-/** Tags the model legitimately produces via markdown. Anything else — script,
- *  iframe, style, svg, form, and every raw-HTML tag someone might inject — is
+/** Tags the model legitimately produces via markdown. Anything else (script,
+ *  iframe, style, svg, form, and every raw-HTML tag someone might inject) is
  *  unwrapped rather than removed outright, so injected *text* still shows up
  *  (visible, harmless, and honest about what the model said) while the element
  *  itself never exists. */
