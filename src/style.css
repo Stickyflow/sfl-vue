@@ -2,7 +2,8 @@
    the same product rather than a differently-themed demo — see that file's
    header comment for where the serif stack itself comes from. */
 :root {
-  --serif: 'Latin Modern Roman', 'CMU Serif', 'Source Serif 4', Georgia, Cambria, 'Times New Roman', serif;
+  --serif:
+    'Latin Modern Roman', 'CMU Serif', 'Source Serif 4', Georgia, Cambria, 'Times New Roman', serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --accent: #6d5ef0;

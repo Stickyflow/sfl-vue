@@ -28,7 +28,7 @@ watch(
 // reattachment plays in vanilla DOM, so the mounted <stickyflow-diagram>'s
 // pan/zoom state survives a later reply instead of resetting every turn.
 const diagramTarget = computed<string | null>(() =>
-  diagramOwner.value ? `#${diagramSlotId(diagramOwner.value.id)}` : null
+  diagramOwner.value ? `#${diagramSlotId(diagramOwner.value.id)}` : null,
 )
 </script>
 
@@ -40,8 +40,8 @@ const diagramTarget = computed<string | null>(() =>
     </header>
 
     <AppBanner v-if="config?.hasApiKey === false">
-      No {{ config.provider === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY' }} on the server.
-      Copy .env.example to .env, add your key, and restart the dev server.
+      No {{ config.provider === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY' }} on the
+      server. Copy .env.example to .env, add your key, and restart the dev server.
     </AppBanner>
 
     <div ref="scrollEl" class="scroll">

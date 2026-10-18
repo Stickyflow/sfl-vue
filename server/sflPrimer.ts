@@ -248,4 +248,4 @@ Before sending the document, check it against this list:
   actual branch to justify it.
 - Every entity has at least one link in or out, unless it is truly isolated
   by design; a disconnected entity usually means a link was forgotten.
-- No two entities' \`layout.position\`/\`size\` boxes overlap.`;
+- No two entities' \`layout.position\`/\`size\` boxes overlap.`
