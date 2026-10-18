@@ -31,7 +31,7 @@ const ALLOWED_TAGS = new Set([
   'A',
 ]);
 
-function sanitize(root: HTMLElement) {
+function sanitize(root: ParentNode) {
   // Snapshot first: unwrapping mutates the tree while we walk it.
   for (const element of [...root.querySelectorAll('*')]) {
     if (!ALLOWED_TAGS.has(element.tagName)) {
@@ -54,8 +54,13 @@ function sanitize(root: HTMLElement) {
 /** Renders `text` as sanitized markdown HTML, safe to bind with `v-html`. */
 export function renderMarkdownToHtml(text: string): string {
   const html = marked.parse(text, { async: false, gfm: true, breaks: true });
-  const staging = document.createElement('div');
+  // Parse into a <template>, not a plain <div>: a div created by the live
+  // document starts fetching <img src> the moment innerHTML is set, even while
+  // detached, so `<img src=x onerror=...>` would fire its handler before (and
+  // regardless of) the allowlist walk. Template content lives in an inert
+  // document with no browsing context: nothing loads and no handler runs.
+  const staging = document.createElement('template');
   staging.innerHTML = html;
-  sanitize(staging);
+  sanitize(staging.content);
   return staging.innerHTML;
 }
