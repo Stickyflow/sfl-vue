@@ -1,5 +1,5 @@
 export interface ChatMessage {
-  /** Stable identity for `v-for` keys and the message's diagram slot id. */
+  /** Stable identity for `v-for` keys and for finding the diagram owner. */
   id: string
   role: 'user' | 'assistant'
   content: string
