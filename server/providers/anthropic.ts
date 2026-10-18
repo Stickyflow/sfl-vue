@@ -1,13 +1,13 @@
-import Anthropic from '@anthropic-ai/sdk';
-import type { AnthropicEffort } from '../config';
-import type { Complete } from './types';
+import Anthropic from '@anthropic-ai/sdk'
+import type { AnthropicEffort } from '../config'
+import type { Complete } from './types'
 
 export function createAnthropicProvider(options: {
-  apiKey: string;
-  baseURL?: string;
-  effort?: AnthropicEffort;
+  apiKey: string
+  baseURL?: string
+  effort?: AnthropicEffort
 }): Complete {
-  const client = new Anthropic({ apiKey: options.apiKey, baseURL: options.baseURL });
+  const client = new Anthropic({ apiKey: options.apiKey, baseURL: options.baseURL })
 
   return async ({ model, system, messages }) => {
     const response = await client.messages.create({
@@ -20,10 +20,10 @@ export function createAnthropicProvider(options: {
       })),
       messages,
       ...(options.effort ? { output_config: { effort: options.effort } } : {}),
-    });
+    })
     const textBlock = response.content.find(
       (block): block is Anthropic.TextBlock => block.type === 'text',
-    );
+    )
     return {
       reply: textBlock?.text ?? '',
       model: response.model,
@@ -32,6 +32,6 @@ export function createAnthropicProvider(options: {
         completionTokens: response.usage.output_tokens,
         totalTokens: response.usage.input_tokens + response.usage.output_tokens,
       },
-    };
-  };
+    }
+  }
 }

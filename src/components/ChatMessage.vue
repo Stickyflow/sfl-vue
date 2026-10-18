@@ -9,19 +9,24 @@ const props = defineProps<{ message: ChatMessage }>()
 
 // A computed rather than a call in the template, so each message's markdown
 // is parsed and sanitized once instead of on every re-render of the thread.
-const html = computed(() => renderMarkdownToHtml(
-  props.message.role === 'assistant' ? replyProse(props.message.content) : props.message.content,
-))
+const html = computed(() =>
+  renderMarkdownToHtml(
+    props.message.role === 'assistant' ? replyProse(props.message.content) : props.message.content,
+  ),
+)
+
+const costCaption = computed(() => {
+  const cost = props.message.cost
+  if (!cost) return null
+  return cost.totalTokens ? `${cost.model} · ${cost.totalTokens} tokens` : cost.model
+})
 </script>
 
 <template>
   <div class="message" :class="`message--${message.role}`">
     <!-- eslint-disable-next-line vue/no-v-html -- renderMarkdownToHtml parses inertly and allowlists tags/attributes -->
     <div class="bubble" v-html="html" />
-    <p v-if="message.cost" class="cost">
-      {{ message.cost.model }}<template v-if="message.cost.totalTokens">
-        &middot; {{ message.cost.totalTokens }} tokens</template>
-    </p>
+    <p v-if="costCaption" class="cost">{{ costCaption }}</p>
     <!-- Teleport target for the single diagram card in App.vue: empty on
          every row except the one that currently owns the diagram. -->
     <div :id="diagramSlotId(message.id)" class="diagram-slot" />
@@ -88,10 +93,18 @@ const html = computed(() => renderMarkdownToHtml(
   font-weight: 600;
   line-height: 1.35;
 }
-.bubble :deep(h1) { font-size: 1.25em; }
-.bubble :deep(h2) { font-size: 1.15em; }
-.bubble :deep(h3) { font-size: 1.05em; }
-.bubble :deep(h4) { font-size: 1em; }
+.bubble :deep(h1) {
+  font-size: 1.25em;
+}
+.bubble :deep(h2) {
+  font-size: 1.15em;
+}
+.bubble :deep(h3) {
+  font-size: 1.05em;
+}
+.bubble :deep(h4) {
+  font-size: 1em;
+}
 .bubble :deep(code) {
   font-family: var(--mono);
   font-size: 0.86em;
