@@ -1,81 +1,49 @@
-# SFL Vue — the web-component round trip
+<div align="center">
 
-The same round trip as [`examples/sfl-chat`](../sfl-chat) — an LLM writes SFL,
-the diagram renders, the next turn edits it — but consumed from a **Vue**
-project through `stickyflow/web-component`'s `<stickyflow-diagram>` tag
-instead of the raw `stickyflow/viewer`/`stickyflow/interaction` JS API.
-Where sfl-chat is the "full control" reference, this is the "least setup"
-one: a plain custom element, framework binding only, no viewer lifecycle code
-to write yourself.
+# SFL Vue
 
-It exists to answer one question concretely: **does stickyflow.js actually
-work in Vue?** — see the site's Framework Integration docs for the general
-answer; this is the working proof.
+**stickyflow.js in a Vue app, through one custom element.**
 
-## Running it
+</div>
+
+A model writes SFL, the page renders it, and your next message edits the same
+diagram. It is the round trip from [sfl-chat](https://github.com/Stickyflow/sfl-chat),
+rebuilt in Vue on top of `<stickyflow-diagram>` instead of the viewer API.
+sfl-chat shows what full control looks like; this one shows the least setup
+that works.
+
+```text
+prompt  →  /api/chat  →  reply with an SFL block  →  <stickyflow-diagram :source>
+```
+
+## Run it
 
 ```bash
-cp .env.example .env      # then put an OpenAI and/or Anthropic key in it
+cp .env.example .env    # an OpenAI key, an Anthropic key, or both
 npm install
 npm run dev
 ```
 
-Either key on its own is enough — see `.env.example`. Same dev-server-only
-backend shape as sfl-chat: `/api/chat`, `/api/config`, `/api/prompt` are Vite
-`configureServer` middleware (in `server/`), so **this runs under `npm run dev` only** —
-`npm run build` emits static files with no backend, and don't expose the dev
-server beyond localhost (`vite --host`) unless you also add rate limiting and
-auth, neither of which is in scope here. See sfl-chat's own README for the
-fuller version of this warning; it applies unchanged.
+The keys stay in the Vite dev server and never reach the browser. With only
+`ANTHROPIC_API_KEY` set, it runs on Claude.
 
-## What's different from sfl-chat
+The API is dev-server middleware, so this only works under `npm run dev`;
+`npm run build` gives you static files and no backend. There is no auth and
+no rate limiting, so keep it on localhost. `vite --host` hands your key's
+spend to anyone on the network.
 
-This is deliberately a **smaller slice**, not a Vue port of every sfl-chat
-feature — the gaps are specific to what `<stickyflow-diagram>` does and
-doesn't expose, not arbitrary cuts:
+## The integration
 
-- **No canvas editing.** sfl-chat layers `stickyflow/interaction` on the
-  viewer for drag-to-move, drag-to-resize, and double-click text edit. The
-  web component only mounts `stickyflow/viewer` internally (`interactive`
-  turns on click-to-select and pan/zoom) — `stickyflow/interaction` isn't
-  wired into the tag yet (see the package's Integration Tiers docs, tier 3).
-  If you need editing, that's the JS-API pattern shown in this site's
-  Framework Integration docs (React tab) — plain lifecycle code, not
-  something the web component gives you for free.
-- **No Observation.** sfl-chat's "the turn with no prompt" feature listens to
-  the same `stickyflow/interaction` edit events to trigger an unprompted
-  remark. With no editing tier, there's nothing to observe — the feature has
-  no equivalent here, not a simplified one.
-- **No overlap guard.** sfl-chat rejects a reply whose new content was drawn
-  ON TOP of existing content (not beside it, as instructed), via a geometry
-  check against `stickyflow`'s parsed entity bounds. This demo keeps the
-  cheaper duplicate guard (a byte-identical reply doesn't overwrite the
-  diagram) but skips the overlap check, to keep `App.vue` focused on the
-  framework-binding question this example is actually about.
-- **No Settings dialog / per-browser model override.** Model and provider
-  come from `.env` only. sfl-chat's Settings dialog is UI complexity that has
-  nothing to do with Vue integration specifically; see its README if you want
-  that pattern.
-- **No multi-chat sidebar / localStorage persistence.** One chat, in memory,
-  gone on reload.
-
-Everything else — the SFL primer, the dual OpenAI/Anthropic backend with the
-same `LLM_PROVIDER`/model-prefix routing, the one-diagram-per-chat rule, the
-markdown-with-a-strict-allowlist rendering of replies — is the same idea,
-reimplemented for Vue rather than shared code (see `server/sflPrimer.ts` and
-`server/config.ts` for why: examples are meant to be self-contained).
-
-## The integration itself
-
-Two lines register the tag, once, before the app mounts (`src/main.ts`):
+Register the element once, before mounting (`src/main.ts`):
 
 ```ts
 import { defineStickyflowDiagram } from 'stickyflow/web-component'
+
 defineStickyflowDiagram()
 ```
 
-One line in `vite.config.ts` tells Vue's compiler it's a real custom element,
-not an unresolved Vue component:
+Tell Vue's compiler it's a custom element, not a missing component
+(`vite.config.ts`):
 
 ```ts
 vue({
@@ -87,25 +55,69 @@ vue({
 })
 ```
 
-And the template binding itself (`src/App.vue`) is plain Vue — `:source`
-takes the diagram text, `interactive` (bare, since it's a presence-checked
-attribute — see the package's `DiagramConfig`) turns on click/pan/zoom:
+Bind it (`src/components/DiagramCard.vue`). `interactive` is a bare attribute
+and turns on selection, pan and zoom:
 
 ```html
-<stickyflow-diagram v-if="currentSfl" interactive :source="currentSfl" />
+<stickyflow-diagram interactive :source="source" />
 ```
 
-That's the entire embedding. Everything else in `App.vue` is ordinary chat-UI
-state management that would look the same regardless of what's rendering the
-diagram.
+That's the whole integration. Everything else in `src/` is ordinary chat UI.
+
+## Compared to sfl-chat
+
+The gaps come from what the web component exposes, not from cutting corners.
+
+| | sfl-chat | here |
+| --- | --- | --- |
+| Rendering | `stickyflow/viewer` | `<stickyflow-diagram>` |
+| Drag, resize, edit labels | yes, via `stickyflow/interaction` | no, the element doesn't wire that tier in |
+| Rejects a reply drawn on top of the old diagram | yes | no, only byte-identical replies are skipped |
+| Model and provider | Settings dialog, per browser | `.env` only |
+| Chats | many, kept in localStorage | one, in memory |
+
+Shared with sfl-chat: the SFL primer, the OpenAI/Anthropic routing, one
+diagram per chat, and sanitized markdown in replies. The code is copied, not
+imported, so each repo stands on its own.
+
+## Configuration
+
+| `.env` | Default | |
+| --- | --- | --- |
+| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` | | Either one is enough. |
+| `LLM_PROVIDER` | from the keys | `openai` or `anthropic`. Unset, it's Claude when only the Anthropic key is set, OpenAI otherwise. |
+| `OPENAI_MODEL` | `gpt-5.6-sol` | |
+| `ANTHROPIC_MODEL` | `claude-opus-5` | |
+| `OPENAI_BASE_URL`, `ANTHROPIC_BASE_URL` | SDK default | Any compatible endpoint. |
+| `OPENAI_REASONING_EFFORT`, `ANTHROPIC_EFFORT` | off | See `.env.example` before turning it on. |
+
+Restart the dev server after changing `.env`.
+
+## Layout
+
+| Path | |
+| --- | --- |
+| `server/chatApi.ts` | The Vite plugin: `/api/chat`, `/api/config`, `/api/prompt`. |
+| `server/request.ts` | Reads and validates the request body. |
+| `server/providers/` | One module per SDK behind a shared `Complete` type. |
+| `server/sflPrimer.ts` | The system prompt that teaches the model SFL. |
+| `src/composables/` | `useChat`, `useServerConfig`, `useClipboard`. |
+| `src/components/` | Message, diagram card, composer, banner. |
+| `src/lib/sfl.ts` | Finds the SFL block in a reply. |
+| `src/markdown.ts` | Markdown to HTML through a strict allowlist. Model output is untrusted. |
+
+```bash
+npm run typecheck   # vue-tsc, app and server projects
+npm run lint        # ESLint
+npm run format      # Prettier
+npm run build       # typecheck, then vite build
+```
 
 ## Known limits
 
-Beyond the sfl-chat-feature gaps listed above:
-
-- One call per turn, no streaming — the UI simply waits, same as sfl-chat.
-- The whole document is regenerated each turn, same as sfl-chat.
-- Invalid SFL: the web component shows its own inline parse-error message
-  (see `StickyflowDiagram`'s `rerender()`) rather than sfl-chat's status bar —
-  the previous diagram doesn't stay mounted through an error here, since
-  `:source` swaps directly.
+- No streaming. The page waits for the whole reply.
+- The model rewrites the whole document every turn.
+- Invalid SFL shows the element's own inline error. The previous diagram
+  isn't kept on screen.
+- The element rebuilds its viewer whenever `source` changes, so pan and zoom
+  reset with every new version of the diagram.
