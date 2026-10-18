@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import AppBanner from './components/AppBanner.vue'
 import ChatComposer from './components/ChatComposer.vue'
 import ChatMessage from './components/ChatMessage.vue'
 import DiagramCard from './components/DiagramCard.vue'
 import { useChat } from './composables/useChat'
 import { useServerConfig } from './composables/useServerConfig'
-import { diagramSlotId } from './lib/diagramSlot'
 
 const { messages, loading, error, diagramOwner, currentSfl, send } = useChat()
 const config = useServerConfig()
@@ -21,14 +20,6 @@ watch(
     if (scrollEl.value) scrollEl.value.scrollTop = scrollEl.value.scrollHeight
   },
   { flush: 'post' },
-)
-
-// The diagram card is built ONCE and reattached to the owning message's slot
-// as the owner moves, the same trick sfl-chat's own diagramCardEl
-// reattachment plays in vanilla DOM, so the mounted <stickyflow-diagram>'s
-// pan/zoom state survives a later reply instead of resetting every turn.
-const diagramTarget = computed<string | null>(() =>
-  diagramOwner.value ? `#${diagramSlotId(diagramOwner.value.id)}` : null,
 )
 </script>
 
@@ -54,17 +45,16 @@ const diagramTarget = computed<string | null>(() =>
           </p>
         </div>
 
-        <ChatMessage v-for="message in messages" :key="message.id" :message="message" />
+        <!-- The diagram renders under whichever message owns it. Moving it is
+             a remount, but <stickyflow-diagram> (0.5.0) rebuilds its viewer
+             on every source change anyway, so no view state is lost. -->
+        <ChatMessage v-for="message in messages" :key="message.id" :message="message">
+          <DiagramCard v-if="message === diagramOwner && currentSfl" :source="currentSfl" />
+        </ChatMessage>
 
         <p v-if="loading" class="thinking">Thinking…</p>
       </div>
     </div>
-
-    <!-- `defer` resolves the target after the rest of this render, so a slot
-         rendered in the same update as the owner change already exists. -->
-    <Teleport v-if="diagramTarget && currentSfl" defer :to="diagramTarget">
-      <DiagramCard :source="currentSfl" />
-    </Teleport>
 
     <AppBanner v-if="error">{{ error }}</AppBanner>
 

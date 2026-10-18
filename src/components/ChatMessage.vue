@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { renderMarkdownToHtml } from '../markdown'
 import { replyProse } from '../lib/sfl'
-import { diagramSlotId } from '../lib/diagramSlot'
 import type { ChatMessage } from '../types'
 
 const props = defineProps<{ message: ChatMessage }>()
@@ -27,9 +26,8 @@ const costCaption = computed(() => {
     <!-- eslint-disable-next-line vue/no-v-html -- renderMarkdownToHtml parses inertly and allowlists tags/attributes -->
     <div class="bubble" v-html="html" />
     <p v-if="costCaption" class="cost">{{ costCaption }}</p>
-    <!-- Teleport target for the single diagram card in App.vue: empty on
-         every row except the one that currently owns the diagram. -->
-    <div :id="diagramSlotId(message.id)" class="diagram-slot" />
+    <!-- The diagram card, on the one message that currently owns it. -->
+    <slot />
   </div>
 </template>
 

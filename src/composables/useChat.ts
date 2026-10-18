@@ -9,8 +9,8 @@ export function useChat() {
 
   // The most recent message that actually carries an `sfl` block. There is
   // exactly one diagram per chat, not one per turn, same rule as sfl-chat.
-  // Exposed as the message (not just its source) so App knows which row's
-  // slot the single diagram card should be teleported into.
+  // Exposed as the message (not just its source) so App knows which row
+  // renders the diagram card.
   const diagramOwner = computed<ChatMessage | null>(() => {
     for (let i = messages.value.length - 1; i >= 0; i--) {
       if (messages.value[i].sfl) return messages.value[i]
