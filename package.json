@@ -6,7 +6,8 @@
   "description": "Vue counterpart to examples/sfl-chat: same LLM-writes-SFL round trip, rendered through the drop-in <stickyflow-diagram> web component instead of the raw viewer API.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vue-tsc --build && vite build",
+    "preview": "vite preview",
     "typecheck": "vue-tsc --build"
   },
   "dependencies": {
