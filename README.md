@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="docs/hero-astronaut.webp" alt="An astronaut reclining in a retro spacecraft, drawn in blue, yellow and orange" width="900">
-</p>
-
 <div align="center">
 
 # SFL Vue
