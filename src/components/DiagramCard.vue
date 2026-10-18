@@ -3,9 +3,8 @@ import { useClipboard } from '../composables/useClipboard'
 
 const props = defineProps<{ source: string }>()
 
-// Same affordance as sfl-chat's diagram__copy-btn, minus the source-view
-// toggle it's normally paired with there: this demo has no rendered/source
-// switch, so the button just copies the current source directly.
+// The raw SFL is never shown on the page, so copying it is the way to take
+// the document elsewhere.
 const { copied, copy } = useClipboard()
 </script>
 
@@ -33,13 +32,12 @@ const { copied, copy } = useClipboard()
 </template>
 
 <style scoped>
-/* Same border/radius/background as sfl-chat's own .diagram. */
 .diagram {
   margin-top: 0.25rem;
   border: 1px solid var(--border);
   border-radius: 0.85rem;
   overflow: hidden;
-  background: #fff;
+  background: var(--canvas);
 }
 
 .diagram__viewer {

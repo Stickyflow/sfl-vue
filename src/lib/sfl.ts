@@ -14,7 +14,7 @@ function isSfl(text: string): boolean {
 
 /** Pulls the SFL document out of a reply: the first fenced block that starts
  *  with an SFL header, or the whole reply when the model sent a bare document
- *  with no fence at all. Mirrors examples/sfl-chat's extractSfl() contract. */
+ *  with no fence at all. */
 export function extractSfl(reply: string): string | null {
   for (const [, body] of reply.matchAll(FENCE)) {
     if (isSfl(body)) return body.trim()

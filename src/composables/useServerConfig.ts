@@ -1,7 +1,7 @@
 import { onMounted, ref } from 'vue'
 import type { ServerConfig } from '../types'
 
-/** Best-effort and non-blocking, same as sfl-chat's labelServerDefaults(): if
+/** Best-effort and non-blocking: if
  *  /api/config isn't reachable (a static preview with no dev-server backend),
  *  this stays null and the page just doesn't show the "no API key" banner.
  *  Nothing else depends on it having loaded. */

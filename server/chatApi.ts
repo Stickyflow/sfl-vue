@@ -9,12 +9,10 @@ import { SFL_PRIMER } from './sflPrimer'
  * The LLM call lives here, in Vite's dev server, rather than in the browser:
  * an API key shipped to the client is readable by anyone who opens devtools.
  *
- * Deliberately simpler than sfl-chat's version: there's no `observe` mode
- * here, because that feature depends on `stickyflow/interaction` reporting
- * drag/resize/text-edit gestures, and this demo renders through the
- * `<stickyflow-diagram>` web component instead, which doesn't expose that tier
- * (see the package's Integration Tiers docs). One mode (a prompt in, a
- * document out) is the whole surface.
+ * One mode is the whole surface: a prompt in, a document out. The diagram
+ * renders through the `<stickyflow-diagram>` web component, which doesn't
+ * report edit gestures (see the package's Integration Tiers docs), so there
+ * is nothing on the canvas side for the server to react to.
  */
 export function chatApi(env: Record<string, string>): Plugin {
   const config = readServerConfig(env)
@@ -33,9 +31,8 @@ export function chatApi(env: Record<string, string>): Plugin {
   return {
     name: 'sfl-vue-api',
     configureServer(server) {
-      // Same shape as sfl-chat's /api/config: lets the UI name the actual
-      // server default instead of an unhelpful bare placeholder, and warn
-      // before the first request fails.
+      // Lets the UI warn about a missing API key before the first request
+      // fails, and name the model the server will actually use.
       server.middlewares.use('/api/config', (req, res) => {
         const defaults = config[config.defaultProvider]
         res.setHeader('Content-Type', 'application/json')
@@ -49,8 +46,8 @@ export function chatApi(env: Record<string, string>): Plugin {
         )
       })
 
-      // The system prompt as plain text, same purpose as sfl-chat's:
-      // reproducing a turn elsewhere without an API key.
+      // The system prompt as plain text, for reproducing a turn elsewhere
+      // without an API key.
       server.middlewares.use('/api/prompt', (req, res) => {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8')
         res.end(SFL_PRIMER)
@@ -80,9 +77,9 @@ export function chatApi(env: Record<string, string>): Plugin {
             )
           }
 
-          // Same reasoning as sfl-chat: the document is its own system turn,
-          // separate from the primer, so the moving part (currentSfl) never
-          // touches the stable prefix.
+          // The document is its own system turn, separate from the primer, so
+          // the moving part (currentSfl) never touches the stable, cacheable
+          // prefix.
           const system = [SFL_PRIMER]
           if (currentSfl) {
             system.push(

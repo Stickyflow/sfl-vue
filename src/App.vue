@@ -38,10 +38,9 @@ watch(
     <div ref="scrollEl" class="scroll">
       <div class="thread">
         <div v-if="messages.length === 0" class="empty">
-          <h2>What should we map?</h2>
+          <h2>What's on your mind?</h2>
           <p>
-            Describe something to diagram: a process, a system, a decision. Ask for a change
-            afterward and it edits the same diagram in place.
+            Describe it and it turns into a diagram. Ask for a change and the same diagram updates.
           </p>
         </div>
 

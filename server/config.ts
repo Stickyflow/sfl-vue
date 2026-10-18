@@ -13,10 +13,9 @@ export interface ServerConfig {
   anthropic: { apiKey?: string; model: string; baseURL?: string; effort?: AnthropicEffort }
 }
 
-/** Same routing rule as examples/sfl-chat's vite.config.ts: a "claude…" model
- *  name goes to Anthropic, anything else goes to OpenAI. See that file for the
- *  full reasoning. Copied here rather than shared because examples are
- *  self-contained (see the package README). */
+/** A "claude…" model name goes to Anthropic, anything else to OpenAI. The
+ *  model name alone decides, so there is no separate provider setting to
+ *  keep in sync with it. */
 export function providerFor(model: string): Provider {
   return model.startsWith('claude') ? 'anthropic' : 'openai'
 }
@@ -42,8 +41,8 @@ export function readServerConfig(env: Record<string, string>): ServerConfig {
     effort: oneOf(ANTHROPIC_EFFORTS, env.ANTHROPIC_EFFORT),
   }
 
-  // Same auto-detection as sfl-chat: an Anthropic-only setup (no
-  // OPENAI_API_KEY at all) defaults to Claude; anything else defaults to
+  // An Anthropic-only setup (no OPENAI_API_KEY at all) defaults to Claude;
+  // anything else defaults to
   // OpenAI, so a caller can force it either way with LLM_PROVIDER.
   const defaultProvider: Provider =
     oneOf(['openai', 'anthropic'] as const, env.LLM_PROVIDER) ??
