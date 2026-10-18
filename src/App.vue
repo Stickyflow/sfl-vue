@@ -4,6 +4,7 @@ import AppBanner from './components/AppBanner.vue'
 import ChatComposer from './components/ChatComposer.vue'
 import ChatMessage from './components/ChatMessage.vue'
 import DiagramCard from './components/DiagramCard.vue'
+import ThemeToggle from './components/ThemeToggle.vue'
 import { useChat } from './composables/useChat'
 import { useServerConfig } from './composables/useServerConfig'
 
@@ -26,8 +27,11 @@ watch(
 <template>
   <div class="app">
     <header class="topbar">
-      <h1>SFL Vue</h1>
-      <p class="topbar__sub">stickyflow.js round trip: rendered via &lt;stickyflow-diagram&gt;</p>
+      <div>
+        <h1>SFL Vue</h1>
+        <p class="topbar__sub">stickyflow.js round trip: rendered via &lt;stickyflow-diagram&gt;</p>
+      </div>
+      <ThemeToggle />
     </header>
 
     <AppBanner v-if="config?.hasApiKey === false">
@@ -69,6 +73,10 @@ watch(
 }
 
 .topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   padding: 0.6rem 1rem;
   border-bottom: 1px solid var(--border);
 }
