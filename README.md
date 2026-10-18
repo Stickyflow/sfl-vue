@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/hero-dark.webp">
+    <img src="docs/hero-light.webp" alt="A pink shipping container floating over a green circle and block, drawn as a Bauhaus poster" width="420">
+  </picture>
+</p>
+
 <div align="center">
 
 # SFL Vue
